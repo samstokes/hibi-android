@@ -1,2 +1,5 @@
 bin
 gen
+.cache
+proguard_cache
+libs/scala_library.min.jar
