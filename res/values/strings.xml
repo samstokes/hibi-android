@@ -2,5 +2,6 @@
 <resources>
 
     <string name="app_name">Hibi</string>
+    <string name="fetch_failed">Couldn\'t fetch tasks: %s</string>
 
 </resources>
