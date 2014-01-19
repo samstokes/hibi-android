@@ -16,7 +16,7 @@ class TaskListFragment extends ListFragment {
   trait Callbacks {}
   
   private var mListener: Option[Callbacks] = None
-  private var mTasks: Array[Task] = Array()
+  private var mTodo: Array[Task] = Array()
   
   override def onCreate(savedInstanceState: Bundle) {
     super.onCreate(savedInstanceState)
@@ -24,8 +24,13 @@ class TaskListFragment extends ListFragment {
     updateTasks()
   }
   
-  override def onCreateView(inflater: LayoutInflater, container: ViewGroup, savedInstanceState: Bundle) =
-    inflater.inflate(R.layout.fragment_task_list, container, false)
+  override def onCreateView(inflater: LayoutInflater, container: ViewGroup, savedInstanceState: Bundle) = {
+    val v = inflater.inflate(R.layout.fragment_task_list, container, false)
+
+    getActivity().setTitle(R.string.title_todo)
+    
+    v
+  }
     
   override def onAttach(activity: Activity) {
     super.onAttach(activity)
@@ -47,7 +52,7 @@ class TaskListFragment extends ListFragment {
   }
   
   private def setupAdapter() {
-	setListAdapter(new TaskAdapter(this, mTasks))
+	setListAdapter(new TaskAdapter(this, mTodo))
   }
 
   private class FetchTasksTask extends AsyncTaskAdapter[Void, Void, Either[String, Array[Task]]] {
@@ -59,7 +64,10 @@ class TaskListFragment extends ListFragment {
     
     override def onPostExecute(tasksOpt: Either[String, Array[Task]]) = tasksOpt match {
       case Right(tasks) =>
-      	mTasks = tasks
+      	mTodo = tasks
+      		.filterNot(_.isDone)
+      		.filter(_.isActive)
+      		.filter(_.isTodoToday).sorted
       	setupAdapter()
       case Left(error) =>
         Toast.makeText(
