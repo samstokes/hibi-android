@@ -22,6 +22,8 @@ class TaskListFragment extends ListFragment {
     super.onCreate(savedInstanceState)
     
     updateTasks()
+    
+    setRetainInstance(true)
   }
   
   override def onCreateView(inflater: LayoutInflater, container: ViewGroup, savedInstanceState: Bundle) = {
