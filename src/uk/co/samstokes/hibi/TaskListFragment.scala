@@ -1,13 +1,13 @@
 package uk.co.samstokes.hibi
 
-import android.support.v4.app.Fragment
+import java.util.Date
+
+import android.app.Activity
+import android.os.Bundle
+import android.support.v4.app.ListFragment
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.os.Bundle
-import android.app.Activity
-import android.support.v4.app.ListFragment
 import uk.co.samstokes.hibi.model.Task
-import java.util.Date
 
 class TaskListFragment extends ListFragment {
   
@@ -39,7 +39,7 @@ class TaskListFragment extends ListFragment {
     super.onDetach()
     mListener = None
   }
-    
+
 }
 
 object TaskListFragment {
