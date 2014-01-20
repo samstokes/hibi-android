@@ -12,6 +12,10 @@ import uk.co.samstokes.hibi.model.HibiFetcher
 import android.widget.Toast
 
 class TaskListFragment extends ListFragment {
+        
+  private val HACKY_HARDCODED_USERNAME = "TODO_EDIT_ME"
+  private val HACKY_HARDCODED_PASSWORD = "TODO_EDIT_ME"
+  private val fetcher = new HibiFetcher(HACKY_HARDCODED_USERNAME, HACKY_HARDCODED_PASSWORD)
   
   trait Callbacks {}
   
@@ -58,8 +62,7 @@ class TaskListFragment extends ListFragment {
   }
 
   private class FetchTasksTask extends AsyncTaskAdapter[Void, Void, Either[String, Array[Task]]] {
-    private val fetcher = new HibiFetcher()
-    
+
     override def pleaseDoInBackground(params: Void*) = {
       fetcher.getTasks().right.map(_.toArray)
     }

@@ -21,21 +21,19 @@ import java.io.IOException
 object HibiFetcher {
     val ENDPOINT = "https://hibi.samstokes.co.uk/api"
     val RESOURCE_TASKS = "/tasks"
-      
-    val HACKY_HARDCODED_USERNAME = "TODO_EDIT_ME"
-    val HACKY_HARDCODED_PASSWORD = "TODO_EDIT_ME"
 }
 
-class HibiFetcher {
+class HibiFetcher(
+    private val username: String,
+    private val password: String
+    ) {
   
 	val TAG = classOf[HibiFetcher].getSimpleName()
 	
     private def getUrlBytes(urlSpec: String): Either[String, Array[Byte]] = {
         val url = new URL(urlSpec)
         val connection = foolishlyOpenConnection(url)
-        val authz = HibiFetcher.HACKY_HARDCODED_USERNAME + ":" + HibiFetcher.HACKY_HARDCODED_PASSWORD
-        connection.setRequestProperty("Authorization", "Basic " +
-            new String(Base64.encode(authz.getBytes("UTF-8"), Base64.NO_WRAP), "UTF-8"))
+        authenticate(connection)
         
         try {
         	val out = new ByteArrayOutputStream()
@@ -96,5 +94,11 @@ class HibiFetcher {
   
     private def hibiTasksUrl: String = HibiFetcher.ENDPOINT + HibiFetcher.RESOURCE_TASKS
 
+    private def authenticate(connection: HttpsURLConnection) = {
+      val authz = username + ":" + password
+      connection.setRequestProperty("Authorization", "Basic " +
+    	  new String(Base64.encode(authz.getBytes("UTF-8"), Base64.NO_WRAP), "UTF-8"))
+      connection
+    }
   
 }
