@@ -25,6 +25,13 @@ case class Task(
 	  todoAt before tomorrow
 	}
 	def isDone = doneAt.isDefined
+
+	def toJson = {
+	  val json = new JSONObject
+	  json
+	      .put("title", title)
+      json
+	}
 }
 
 object Task {

@@ -17,6 +17,7 @@ import java.net.PasswordAuthentication
 import android.util.Base64
 import org.json.JSONException
 import java.io.IOException
+import org.json.JSONObject
 
 object HibiFetcher {
     val ENDPOINT = "https://hibi.samstokes.co.uk/api"
@@ -30,12 +31,27 @@ class HibiFetcher(
   
 	val TAG = classOf[HibiFetcher].getSimpleName()
 	
-    private def getUrlBytes(urlSpec: String): Either[String, Array[Byte]] = {
+    private def requestBytes(
+        method: String,
+        urlSpec: String,
+        bodyOpt: Option[Array[Byte]]
+    ): Either[String, Array[Byte]] = {
         val url = new URL(urlSpec)
         val connection = foolishlyOpenConnection(url)
+        connection.setRequestMethod(method)
+
         authenticate(connection)
         
         try {
+          for (body <- bodyOpt) {
+            connection.setDoOutput(true)
+            connection.setFixedLengthStreamingMode(body.length)
+            
+            val bodyOut = connection.getOutputStream()
+            bodyOut.write(body)
+            bodyOut.close()
+          }
+          
         	val out = new ByteArrayOutputStream()
           
         	if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
@@ -58,16 +74,21 @@ class HibiFetcher(
         	connection.disconnect()
         }
     }
-    
-    private def getUrlJson(urlSpec: String): Either[String, JSONArray] =
-      getUrlBytes(urlSpec).right.flatMap {bytes => try { Right(
-    	new JSONTokener(new String(bytes, "UTF-8")).nextValue().asInstanceOf[JSONArray]
+
+    private def requestUrlJson[JsonParam, JsonResult](
+        method: String,
+        urlSpec: String,
+        body: Option[JsonParam]): Either[String, JsonResult] = {
+      val bodyBytes = body.map(_.toString().getBytes("UTF-8"))
+      requestBytes(method, urlSpec, bodyBytes).right.flatMap {bytes => try { Right(
+        new JSONTokener(new String(bytes, "UTF-8")).nextValue().asInstanceOf[JsonResult]
       )} catch {
         case j: JSONException => Left("got invalid JSON: " + j)
         case cce: ClassCastException => Left("didn't get the JSON I expected: " + cce)
-	  }}
+	  }}}
     
-    private def getTasksJson(): Either[String, JSONArray] =	getUrlJson(hibiTasksUrl)
+    private def getTasksJson(): Either[String, JSONArray] =
+      requestUrlJson("GET", hibiTasksUrl, None)
     
     def getTasks(): Either[String, Seq[Task]] = {
     	val tasksArrayOpt = getTasksJson()
@@ -83,6 +104,16 @@ class HibiFetcher(
     	  case j: JSONException => Left("couldn't parse task from JSON: " + j)
     	}}
     }
+
+    private def postTaskJson(taskJson: JSONObject): Either[String, JSONObject] =
+      requestUrlJson("POST", hibiTasksUrl, Some(taskJson))
+
+    def postTask(task: Task): Either[String, Task] =
+      postTaskJson(task.toJson).right.flatMap {taskObject => try { Right(
+          Task.fromJson(taskObject)
+      )} catch {
+        case j: JSONException => Left("couldn't parse task from JSON: " + j)
+      }}
   
     private def foolishlyOpenConnection(url: URL): HttpsURLConnection = {
     	val sslContext = SSLContext.getInstance("TLS")

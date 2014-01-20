@@ -8,7 +8,7 @@ import android.widget.CheckBox
 import android.widget.TextView
 import uk.co.samstokes.hibi.model.Task
 
-class TaskAdapter(fragment: Fragment, tasks: Array[Task])
+class TaskAdapter(fragment: Fragment, tasks: java.util.List[Task])
 	extends ArrayAdapter[Task](fragment.getActivity(), 0x0, tasks) {
   
   override def getView(position: Int, convertView: View, parent: ViewGroup) = {

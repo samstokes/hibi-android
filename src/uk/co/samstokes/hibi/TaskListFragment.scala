@@ -10,9 +10,18 @@ import uk.co.samstokes.hibi.model.Task
 import android.os.AsyncTask
 import uk.co.samstokes.hibi.model.HibiFetcher
 import android.widget.Toast
+import android.widget.EditText
+import android.widget.Button
+import Implicits._
+import android.view.View
+import java.util.ArrayList
+import android.widget.TextView
+import android.view.KeyEvent
+import android.util.Log
 
 class TaskListFragment extends ListFragment {
         
+  private val TAG = classOf[TaskListFragment].getSimpleName()
   private val HACKY_HARDCODED_USERNAME = "TODO_EDIT_ME"
   private val HACKY_HARDCODED_PASSWORD = "TODO_EDIT_ME"
   private val fetcher = new HibiFetcher(HACKY_HARDCODED_USERNAME, HACKY_HARDCODED_PASSWORD)
@@ -20,7 +29,10 @@ class TaskListFragment extends ListFragment {
   trait Callbacks {}
   
   private var mListener: Option[Callbacks] = None
-  private var mTodo: Array[Task] = Array()
+  private var mTodo: java.util.List[Task] = new ArrayList()
+  
+  private var mNewTaskTitle: Option[EditText] = None
+  private var mAddTaskButton: Option[Button] = None
   
   override def onCreate(savedInstanceState: Bundle) {
     super.onCreate(savedInstanceState)
@@ -34,6 +46,25 @@ class TaskListFragment extends ListFragment {
     val v = inflater.inflate(R.layout.fragment_task_list, container, false)
 
     getActivity().setTitle(R.string.title_todo)
+    
+    mNewTaskTitle = Option(v.findViewById(R.id.new_task_editText).asInstanceOf[EditText])
+    mNewTaskTitle.foreach(_.setOnEditorActionListener {(view: TextView, actionId: Int, event: KeyEvent) =>
+        mAddTaskButton.map(_.callOnClick()).getOrElse(true)
+    })
+    mAddTaskButton = Option(v.findViewById(R.id.new_task_button).asInstanceOf[Button])
+    mAddTaskButton.foreach(_.setOnClickListener {_: View =>
+      mAddTaskButton.foreach(_.setEnabled(false))
+
+      val task = Task(
+          mNewTaskTitle.map(_.getText().toString()).getOrElse(""),
+          Integer.MAX_VALUE,
+          true,
+          new Date(),
+          None
+          )
+      new AddTaskTask().execute(task)
+      ()
+    })
     
     v
   }
@@ -60,6 +91,11 @@ class TaskListFragment extends ListFragment {
   private def setupAdapter() {
 	setListAdapter(new TaskAdapter(this, mTodo))
   }
+  
+  private def updateTaskList() {
+    // TODO re-sort list
+    Option(getListAdapter()).map(_.asInstanceOf[TaskAdapter].notifyDataSetChanged())
+  }
 
   private class FetchTasksTask extends AsyncTaskAdapter[Void, Void, Either[String, Array[Task]]] {
 
@@ -69,10 +105,13 @@ class TaskListFragment extends ListFragment {
     
     override def onPostExecute(tasksOpt: Either[String, Array[Task]]) = tasksOpt match {
       case Right(tasks) =>
-      	mTodo = tasks
+        mTodo = new ArrayList()
+      	tasks
       		.filterNot(_.isDone)
       		.filter(_.isActive)
       		.filter(_.isTodoToday).sorted
+      		.foreach(mTodo.add)
+
       	setupAdapter()
       case Left(error) =>
         Toast.makeText(
@@ -80,6 +119,28 @@ class TaskListFragment extends ListFragment {
             getString(R.string.fetch_failed, error),
             Toast.LENGTH_LONG
             ).show()
+    }
+  }
+  
+  private class AddTaskTask extends AsyncTaskAdapter[Task, Void, Either[String, Task]] {
+    override def pleaseDoInBackground(tasks: Task*) = {
+      fetcher.postTask(tasks.head)
+    }
+    
+    override def onPostExecute(taskOpt: Either[String, Task]) = {
+      taskOpt match {
+          case Right(task) =>
+            mNewTaskTitle.foreach(_.setText(null))
+            mTodo.add(task)
+            updateTaskList()
+          case Left(error) =>
+            Toast.makeText(
+                getActivity(),
+                getString(R.string.add_task_failed, error),
+                Toast.LENGTH_LONG
+                ).show()
+        }
+      mAddTaskButton.foreach(_.setEnabled(true))
     }
   }
   
