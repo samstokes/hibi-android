@@ -1,23 +1,23 @@
 package uk.co.samstokes.hibi
 
+import java.util.ArrayList
 import java.util.Date
+
 import android.app.Activity
 import android.os.Bundle
 import android.support.v4.app.ListFragment
-import android.view.LayoutInflater
-import android.view.ViewGroup
-import uk.co.samstokes.hibi.model.Task
-import android.os.AsyncTask
-import uk.co.samstokes.hibi.model.HibiFetcher
-import android.widget.Toast
-import android.widget.EditText
-import android.widget.Button
-import Implicits._
-import android.view.View
-import java.util.ArrayList
-import android.widget.TextView
 import android.view.KeyEvent
-import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
+import android.widget.Toast
+
+import Implicits._
+import uk.co.samstokes.hibi.model.HibiFetcher
+import uk.co.samstokes.hibi.model.Task
 
 class TaskListFragment extends ListFragment {
         
