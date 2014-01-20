@@ -96,6 +96,14 @@ class TaskListFragment extends ListFragment {
     // TODO re-sort list
     Option(getListAdapter()).map(_.asInstanceOf[TaskAdapter].notifyDataSetChanged())
   }
+  
+  private def signalMessage(length: Int, messageResId: Int, messageParams: AnyRef*) {
+    Toast.makeText(
+                getActivity(),
+                getString(messageResId, messageParams: _*),
+                length
+                ).show()
+  }
 
   private class FetchTasksTask extends AsyncTaskAdapter[Void, Void, Either[String, Array[Task]]] {
 
@@ -122,23 +130,35 @@ class TaskListFragment extends ListFragment {
     }
   }
   
-  private class AddTaskTask extends AsyncTaskAdapter[Task, Void, Either[String, Task]] {
-    override def pleaseDoInBackground(tasks: Task*) = {
-      fetcher.postTask(tasks.head)
+  private class AddTaskTask extends AsyncTaskAdapter[Task, Void, Either[String, Option[Task]]] {
+    override def pleaseDoInBackground(tasks: Task*) = try {
+      fetcher.postTask(tasks.head).right.map(Some(_))
+    } catch {
+      case iSuck: HibiFetcher.ISuckException =>
+        /* ugh, because our HTTP library is terrible, we can't actually get a
+         * result from POSTs; instead we get an EOFException when we try.
+         * However, that actually indicates success... so we'll convey that to
+         * the UI thread by returning success, but with an empty result.
+         */
+        
+        Right(None)
     }
     
-    override def onPostExecute(taskOpt: Either[String, Task]) = {
+    override def onPostExecute(taskOpt: Either[String, Option[Task]]) = {
       taskOpt match {
-          case Right(task) =>
+          case Right(taskOpt) =>
             mNewTaskTitle.foreach(_.setText(null))
-            mTodo.add(task)
-            updateTaskList()
+            taskOpt match {
+              case Some(task) =>
+                mTodo.add(task)
+                updateTaskList()
+              case None =>
+                // succeeded but couldn't get the new task; refresh everything
+                signalMessage(Toast.LENGTH_SHORT, R.string.refreshing_tasks)
+                updateTasks()
+            }
           case Left(error) =>
-            Toast.makeText(
-                getActivity(),
-                getString(R.string.add_task_failed, error),
-                Toast.LENGTH_LONG
-                ).show()
+            signalMessage(Toast.LENGTH_LONG, R.string.add_task_failed, error)
         }
       mAddTaskButton.foreach(_.setEnabled(true))
     }

@@ -18,10 +18,13 @@ import android.util.Base64
 import org.json.JSONException
 import java.io.IOException
 import org.json.JSONObject
+import java.io.EOFException
 
 object HibiFetcher {
     val ENDPOINT = "https://hibi.samstokes.co.uk/api"
     val RESOURCE_TASKS = "/tasks"
+      
+    class ISuckException(cause: Throwable) extends RuntimeException(cause)
 }
 
 class HibiFetcher(
@@ -69,12 +72,13 @@ class HibiFetcher(
         	out.close()
         	Right(out.toByteArray())
         } catch {
+          case eof: EOFException => throw new HibiFetcher.ISuckException(eof)
           case ioe: IOException => Left("Error talking to server: " + ioe)
         } finally {
         	connection.disconnect()
         }
     }
-
+	
     private def requestUrlJson[JsonParam, JsonResult](
         method: String,
         urlSpec: String,
