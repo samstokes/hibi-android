@@ -16,6 +16,8 @@
         android:layout_weight="1"/>
 
     <LinearLayout
+        android:id="@+id/new_task_widget"
+        android:visibility="gone"
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">

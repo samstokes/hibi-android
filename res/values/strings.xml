@@ -13,5 +13,6 @@
     <string name="postpone_task">Postpone</string>
     <string name="finished_task_question">Done &quot;%s&quot;?</string>
     <string name="task_action_failed">Couldn\'t perform action: %s</string>
+    <string name="add_task">Add task</string>
 
 </resources>

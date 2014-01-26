@@ -25,6 +25,9 @@ import uk.co.samstokes.hibi.model.Complete
 import scala.util.Try
 import scala.util.Success
 import scala.util.Failure
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 
 class TaskListFragment extends ListFragment {
         
@@ -36,6 +39,7 @@ class TaskListFragment extends ListFragment {
   private var mListener: Option[TaskListFragment.Callbacks] = None
   private var mTodo: java.util.List[Task] = new ArrayList()
   
+  private var mNewTaskWidget: Option[View] = None
   private var mNewTaskTitle: Option[EditText] = None
   private var mAddTaskButton: Option[Button] = None
   
@@ -43,6 +47,8 @@ class TaskListFragment extends ListFragment {
     super.onCreate(savedInstanceState)
     
     updateTasks()
+    
+    setHasOptionsMenu(true)
     
     setRetainInstance(true)
   }
@@ -52,6 +58,7 @@ class TaskListFragment extends ListFragment {
 
     getActivity().setTitle(R.string.title_todo)
     
+    mNewTaskWidget = Option(v.findViewById(R.id.new_task_widget))
     mNewTaskTitle = Option(v.findViewById(R.id.new_task_editText).asInstanceOf[EditText])
     mNewTaskTitle.foreach(_.setOnEditorActionListener {(view: TextView, actionId: Int, event: KeyEvent) =>
         mAddTaskButton.map(_.callOnClick()).getOrElse(true)
@@ -73,6 +80,23 @@ class TaskListFragment extends ListFragment {
     })
     
     v
+  }
+  
+  override def onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    super.onCreateOptionsMenu(menu, inflater)
+    inflater.inflate(R.menu.fragment_task_list, menu)
+  }
+  
+  override def onOptionsItemSelected(item: MenuItem) = {
+    item.getItemId() match {
+      case R.id.menu_item_add_task =>
+        mNewTaskWidget.foreach {v =>
+          v.setVisibility(View.VISIBLE)
+          v.requestFocus()
+        }
+        true
+      case _ => super.onOptionsItemSelected(item)
+    }
   }
     
   override def onAttach(activity: Activity) {
@@ -168,6 +192,10 @@ class TaskListFragment extends ListFragment {
       taskOpt match {
           case Right(taskOpt) =>
             mNewTaskTitle.foreach(_.setText(null))
+            mNewTaskWidget.foreach {v =>
+              v.clearFocus()
+              v.setVisibility(View.GONE)
+            }
             taskOpt match {
               case Some(task) =>
                 mTodo.add(task)
