@@ -40,6 +40,9 @@ class HibiFetcher(
         bodyOpt: Option[Array[Byte]]
     ): Either[String, Array[Byte]] = {
         val url = new URL(urlSpec)
+
+        Log.d(TAG, "%s %s" format (method, urlSpec))
+
         val connection = foolishlyOpenConnection(url)
         connection.setRequestMethod(method)
 
