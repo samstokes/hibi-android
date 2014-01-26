@@ -4,7 +4,14 @@ import uk.co.samstokes.hibi.model.Task
 
 class TaskListActivity extends SingleFragmentActivity
     with TaskListFragment.Callbacks {
+  
+  val DIALOG_ACTIONS = "TASK_ACTIONS"
 
   override def createFragment() = TaskListFragment.newInstance()
+  
+  override def onTaskSelected(task: Task) {
+    val dialog = TaskActionsFragment.newInstance(task)
+    dialog.show(getSupportFragmentManager(), DIALOG_ACTIONS)
+  }
   
 }

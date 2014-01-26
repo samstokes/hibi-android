@@ -14,10 +14,10 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
-
 import Implicits._
 import uk.co.samstokes.hibi.model.HibiFetcher
 import uk.co.samstokes.hibi.model.Task
+import android.widget.ListView
 
 class TaskListFragment extends ListFragment {
         
@@ -80,6 +80,11 @@ class TaskListFragment extends ListFragment {
   override def onDetach() {
     super.onDetach()
     mListener = None
+  }
+  
+  override def onListItemClick(listView: ListView, v: View, position: Int, id: Long) {
+    val task = (getListAdapter().asInstanceOf[TaskAdapter]).getItem(position)
+    mListener.foreach(_.onTaskSelected(task))
   }
   
   private def updateTasks() {
@@ -167,5 +172,7 @@ class TaskListFragment extends ListFragment {
 object TaskListFragment {
   def newInstance(): TaskListFragment = new TaskListFragment()
     
-  trait Callbacks {}
+  trait Callbacks {
+    def onTaskSelected(task: Task)
+  }
 }
