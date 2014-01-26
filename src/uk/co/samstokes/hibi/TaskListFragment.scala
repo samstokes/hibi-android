@@ -26,9 +26,7 @@ class TaskListFragment extends ListFragment {
   private val HACKY_HARDCODED_PASSWORD = "TODO_EDIT_ME"
   private val fetcher = new HibiFetcher(HACKY_HARDCODED_USERNAME, HACKY_HARDCODED_PASSWORD)
   
-  trait Callbacks {}
-  
-  private var mListener: Option[Callbacks] = None
+  private var mListener: Option[TaskListFragment.Callbacks] = None
   private var mTodo: java.util.List[Task] = new ArrayList()
   
   private var mNewTaskTitle: Option[EditText] = None
@@ -72,10 +70,10 @@ class TaskListFragment extends ListFragment {
   override def onAttach(activity: Activity) {
     super.onAttach(activity)
     try {
-      mListener = Some(activity.asInstanceOf[Callbacks])
+      mListener = Some(activity.asInstanceOf[TaskListFragment.Callbacks])
     } catch {
       case e: ClassCastException => throw new ClassCastException(
-          activity.toString() + " must implement " + classOf[Callbacks].getName())
+          activity.toString() + " must implement " + classOf[TaskListFragment.Callbacks].getName())
     }
   }
   
@@ -168,4 +166,6 @@ class TaskListFragment extends ListFragment {
 
 object TaskListFragment {
   def newInstance(): TaskListFragment = new TaskListFragment()
+    
+  trait Callbacks {}
 }
