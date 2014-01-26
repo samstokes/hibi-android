@@ -14,5 +14,6 @@
     <string name="finished_task_question">Done &quot;%s&quot;?</string>
     <string name="task_action_failed">Couldn\'t perform action: %s</string>
     <string name="add_task">Add task</string>
+    <string name="no_tasks">Nothing to do!  Why not take the rest of the day off?</string>
 
 </resources>
