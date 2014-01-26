@@ -7,10 +7,11 @@
     <string name="add_task_failed">Couldn\'t add task: %s</string>
     <string name="new_task">Add new task</string>
     <string name="new_task_action">Add</string>
-    <string name="refreshing_tasks">Refreshing tasks...</string>
+    <string name="refreshing_tasks">Refreshing tasks&#8230;</string>
     <string name="task_actions">Task actions</string>
     <string name="complete_task">Complete</string>
     <string name="postpone_task">Postpone</string>
     <string name="finished_task_question">Done &quot;%s&quot;?</string>
+    <string name="task_action_failed">Couldn\'t perform action: %s</string>
 
 </resources>

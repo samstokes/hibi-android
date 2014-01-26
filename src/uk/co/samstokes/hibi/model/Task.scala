@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 
 case class Task(
+    val id: Long,
     val title: String,
     val order: Int,
     val isActive: Boolean,
@@ -42,9 +43,11 @@ object Task {
 	implicit val ORDERING: Ordering[Task] = Ordering.by(_.order)
 	
 	def fromJson(json: JSONObject) = {
+	    val taskId = json.getLong("id")
 	    val taskObj = json.getJSONObject("task")
 	    val doneAtString = if (taskObj.isNull("done_at")) None else Some(taskObj.getString("done_at"))
 	    Task(
+	        taskId,
 	        taskObj.getString("title"),
 	        taskObj.getInt("order"),
 	        taskObj.getBoolean("active"),

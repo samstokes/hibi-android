@@ -121,6 +121,10 @@ class HibiFetcher(
       )} catch {
         case j: JSONException => Left("couldn't parse task from JSON: " + j)
       }}
+    
+    def taskAction(action: TaskAction) {
+      requestUrlJson("POST", hibiTaskActionUrl(action), None)
+    }
   
     private def foolishlyOpenConnection(url: URL): HttpsURLConnection = {
     	val sslContext = SSLContext.getInstance("TLS")
@@ -130,7 +134,9 @@ class HibiFetcher(
 		connection
     }
   
-    private def hibiTasksUrl: String = HibiFetcher.ENDPOINT + HibiFetcher.RESOURCE_TASKS
+    private val hibiTasksUrl: String = HibiFetcher.ENDPOINT + HibiFetcher.RESOURCE_TASKS
+    private def hibiTaskActionUrl(action: TaskAction) =
+      hibiTasksUrl + "/" + action.actionPath
 
     private def authenticate(connection: HttpsURLConnection) = {
       val authz = username + ":" + password

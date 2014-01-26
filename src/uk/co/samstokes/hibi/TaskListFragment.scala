@@ -18,6 +18,13 @@ import Implicits._
 import uk.co.samstokes.hibi.model.HibiFetcher
 import uk.co.samstokes.hibi.model.Task
 import android.widget.ListView
+import android.content.Intent
+import android.util.Log
+import uk.co.samstokes.hibi.model.TaskAction
+import uk.co.samstokes.hibi.model.Complete
+import scala.util.Try
+import scala.util.Success
+import scala.util.Failure
 
 class TaskListFragment extends ListFragment {
         
@@ -54,6 +61,7 @@ class TaskListFragment extends ListFragment {
       mAddTaskButton.foreach(_.setEnabled(false))
 
       val task = Task(
+          0,
           mNewTaskTitle.map(_.getText().toString()).getOrElse(""),
           Integer.MAX_VALUE,
           true,
@@ -85,6 +93,15 @@ class TaskListFragment extends ListFragment {
   override def onListItemClick(listView: ListView, v: View, position: Int, id: Long) {
     val task = (getListAdapter().asInstanceOf[TaskAdapter]).getItem(position)
     mListener.foreach(_.onTaskSelected(task))
+  }
+  
+  override def onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
+    requestCode match {
+      case TaskListActivity.REQUEST_ACTIONS =>
+        val action = data.getSerializableExtra(TaskActionsFragment.EXTRA_ACTION).asInstanceOf[TaskAction]
+        new ActionTask().execute(action)
+      case _ => super.onActivityResult(requestCode, resultCode, data)
+    }
   }
   
   private def updateTasks() {
@@ -164,6 +181,22 @@ class TaskListFragment extends ListFragment {
             signalMessage(Toast.LENGTH_LONG, R.string.add_task_failed, error)
         }
       mAddTaskButton.foreach(_.setEnabled(true))
+    }
+  }
+  
+  private class ActionTask extends AsyncTaskAdapter[TaskAction, Void, Try[Unit]] {
+    override def pleaseDoInBackground(actions: TaskAction*) = Try {
+      actions.foreach(fetcher.taskAction(_))
+    }.recover {
+      case e: HibiFetcher.ISuckException => ()
+    }
+    
+    override def onPostExecute(result: Try[Unit]) = result match {
+      case Success(_) =>
+        signalMessage(Toast.LENGTH_SHORT, R.string.refreshing_tasks)
+        updateTasks()
+      case Failure(e) =>
+        signalMessage(Toast.LENGTH_LONG, R.string.task_action_failed, e.getMessage())
     }
   }
   

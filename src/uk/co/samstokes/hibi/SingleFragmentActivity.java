@@ -23,6 +23,11 @@ public abstract class SingleFragmentActivity extends FragmentActivity {
                 .commit();
         }
     }
+    
+    public Fragment getFragment() {
+        final FragmentManager manager = getSupportFragmentManager();
+        return manager.findFragmentById(R.id.fragmentContainer);
+    }
 
 	protected int getLayoutResId() {
 		return R.layout.activity_fragment;

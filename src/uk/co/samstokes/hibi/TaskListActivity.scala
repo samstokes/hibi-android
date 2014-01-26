@@ -11,7 +11,12 @@ class TaskListActivity extends SingleFragmentActivity
   
   override def onTaskSelected(task: Task) {
     val dialog = TaskActionsFragment.newInstance(task)
+    dialog.setTargetFragment(getFragment(), TaskListActivity.REQUEST_ACTIONS)
     dialog.show(getSupportFragmentManager(), DIALOG_ACTIONS)
   }
   
+}
+
+object TaskListActivity {
+    val REQUEST_ACTIONS = 0
 }
